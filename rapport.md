@@ -354,7 +354,15 @@ des stocks influencent fortement les taux d'erreurs.
 
 ### Base de données choisie
 
-[Indiquer la base de données choisie et justifier le choix.]
+La base de données choisie pour le déploiement est **YugabyteDB**. Les tests de
+charge montrent que YugabyteDB obtient le plus faible taux d'erreurs observé,
+soit **68,88 %** avec la stratégie optimiste. Le test de résilience montre aussi
+que la grappe continue à traiter les requêtes après l'arrêt d'un nœud. Enfin,
+YugabyteDB demeure un logiciel libre, tandis que CockroachDB utilise maintenant
+une licence *source available* qui limite son utilisation commerciale gratuite.
+
+CockroachDB a obtenu une meilleure latence, mais YugabyteDB est retenu ici pour
+sa résilience vérifiée, son taux de refus plus faible et son modèle de licence.
 
 ### Description de la VM
 
@@ -369,22 +377,53 @@ des stocks influencent fortement les taux d'erreurs.
 
 ### Procédure de déploiement
 
-1. [Étape 1]
-2. [Étape 2]
-3. [Étape 3]
-4. [Étape 4]
-5. [Étape 5]
+1. Créer une VM Linux et autoriser uniquement les ports nécessaires dans son
+   pare-feu. Les ports d'administration et de base de données doivent idéalement
+   demeurer accessibles seulement depuis un réseau privé.
+2. Installer Git, Docker Engine et le module Docker Compose sur la VM.
+3. Dans les paramètres GitHub du dépôt, ajouter un runner auto-hébergé Linux et
+   installer le service du runner sur la VM.
+4. Ajouter au runner l'étiquette `labo09-production`, utilisée par le travail de
+   déploiement du pipeline.
+5. Envoyer une modification sur la branche `main` ou lancer manuellement le
+   workflow. Le travail `concurrency-test` démarre une grappe temporaire et doit
+   réussir avant que le travail `deploy` soit rendu disponible.
+6. Le travail `deploy` récupère le dépôt sur la VM, crée le fichier `.env`, puis
+   exécute `docker compose up -d --build --remove-orphans` dans `yugabyte-db`.
+7. Le pipeline interroge `/health` pendant un maximum de cinq minutes. Si l'API
+   répond, il affiche l'état des conteneurs; sinon, il affiche les journaux et
+   marque le déploiement comme échoué.
+
+Pour une production réelle, les trois nœuds devraient être distribués sur des VM
+ou des zones distinctes. Trois conteneurs sur une même VM démontrent la
+réplication, mais ne protègent pas contre la panne complète de cette VM. Il
+faudrait également activer l'authentification et TLS, employer des versions
+d'images fixes, automatiser les sauvegardes et superviser la grappe.
 
 ### Fichier d'intégration continue
 
-**Nom du fichier CI :** [À compléter]
+**Nom du fichier CI :** `.github/workflows/deploy-yugabyte.yml`
 
-```yaml
-# Coller ici le contenu du fichier CI ou présenter ses parties importantes.
+Le fichier complet est disponible ici :
+[workflow de test et déploiement](.github/workflows/deploy-yugabyte.yml).
+
+Le workflow contient deux travaux dépendants. Le premier démarre YugabyteDB sur
+un runner GitHub hébergé, attend que l'API soit disponible, puis exécute :
+
+```bash
+python tests/concurrency_test.py --threads 20 --product 3
 ```
 
-[Décrire comment le test `concurrency_test.py` est exécuté avant le déploiement
-et comment un échec empêche celui-ci.]
+La sortie est conservée comme artefact. Le pipeline vérifie que les stratégies
+pessimiste et optimiste produisent chacune exactement deux commandes réussies et
+18 refus, puis confirme que la quantité finale du produit 3 vaut zéro. Toute
+différence produit un code de sortie non nul. Les journaux Docker sont alors
+affichés et le travail `deploy`, qui déclare `needs: concurrency-test`, n'est pas
+exécuté.
+
+Après un test réussi, le second travail est confié au runner auto-hébergé portant
+l'étiquette `labo09-production`. Cette dépendance garantit que le déploiement sur
+la VM ne commence qu'après la validation du contrôle de concurrence.
 
 ### Validation du déploiement
 

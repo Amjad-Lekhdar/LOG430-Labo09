@@ -1,0 +1,118 @@
+name: Test and deploy YugabyteDB
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yugabyte-production
+  cancel-in-progress: false
+
+jobs:
+  concurrency-test:
+    name: Distributed concurrency test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: yugabyte-db
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Create test environment file
+        run: cp .env.example .env
+
+      - name: Start YugabyteDB and application
+        run: docker compose up -d --build
+
+      - name: Wait for the API
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:5000/health > /dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose ps
+          docker compose logs
+          exit 1
+
+      - name: Run and validate the concurrency test
+        run: |
+          set -o pipefail
+          docker compose exec -T python-app \
+            python tests/concurrency_test.py --threads 20 --product 3 \
+            2>&1 | tee concurrency-test-results.txt
+
+          expected_results=$(grep -c \
+            "Résultat : 2 commande(s) réussie(s), 18 échouée(s) sur 20 threads" \
+            concurrency-test-results.txt)
+
+          if [ "$expected_results" -ne 2 ]; then
+            echo "Expected two valid results, one for each locking strategy."
+            exit 1
+          fi
+
+          curl --fail --silent http://localhost:5000/stocks \
+            | tee stocks-after-test.json \
+            | jq -e '.[] | select(.product_id == 3 and .quantity == 0)'
+
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: yugabyte-concurrency-results
+          path: |
+            yugabyte-db/concurrency-test-results.txt
+            yugabyte-db/stocks-after-test.json
+          if-no-files-found: warn
+
+      - name: Show logs after a failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop test environment
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+
+  deploy:
+    name: Deploy to production VM
+    needs: concurrency-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, x64, labo09-production]
+    timeout-minutes: 20
+    environment: production
+
+    defaults:
+      run:
+        working-directory: yugabyte-db
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Create production environment file
+        run: cp .env.example .env
+
+      - name: Build and deploy services
+        run: docker compose up -d --build --remove-orphans
+
+      - name: Verify deployment
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent http://localhost:5000/health > /dev/null; then
+              docker compose ps
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose ps
+          docker compose logs
+          exit 1
