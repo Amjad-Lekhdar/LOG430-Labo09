@@ -1,0 +1,78 @@
+2026-07-22 17:42:20 - concurrency_test - DEBUG - 
+╔══════════════════════════════════════════════════════════╗
+2026-07-22 17:42:20 - concurrency_test - DEBUG - ║        Test de concurrence – Verrous distribués          ║
+2026-07-22 17:42:20 - concurrency_test - DEBUG - ╚══════════════════════════════════════════════════════════╝
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Hôte    : http://localhost:5000
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Threads : 20
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Produit : 3
+2026-07-22 17:42:20 - concurrency_test - DEBUG - 
+============================================================
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Stratégie : Pessimiste (SELECT FOR UPDATE)
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Endpoint  : /orders/pessimistic
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Threads   : 20  (tous libérés simultanément)
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Article   : 3
+2026-07-22 17:42:20 - concurrency_test - DEBUG - ============================================================
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Stocks réinitialisés ✓
+
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 0  user_id=1  HTTP 409  0.153s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 1  user_id=2  HTTP 409  0.171s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 2  user_id=3  HTTP 409  0.159s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 3  user_id=1  HTTP 409  0.139s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 4  user_id=2  HTTP 409  0.142s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 5  user_id=3  HTTP 409  0.167s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 6  user_id=1  HTTP 409  0.233s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 7  user_id=2  HTTP 409  0.148s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 8  user_id=3  HTTP 409  0.15s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 9  user_id=1  HTTP 409  0.24s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 10  user_id=2  HTTP 409  0.153s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 11  user_id=3  HTTP 409  0.335s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 12  user_id=1  HTTP 409  0.236s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 13  user_id=2  HTTP 409  0.142s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 14  user_id=3  HTTP 409  0.237s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ✅ thread 15  user_id=1  HTTP 201  0.086s  →  {'order_id': 601, 'total': '5.75'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 16  user_id=2  HTTP 409  0.142s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ✅ thread 17  user_id=3  HTTP 201  0.132s  →  {'order_id': 701, 'total': '5.75'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 18  user_id=1  HTTP 409  0.159s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   ❌ thread 19  user_id=2  HTTP 409  0.343s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:20 - concurrency_test - DEBUG - 
+  Résultat : 2 commande(s) réussie(s), 18 échouée(s) sur 20 threads
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Latence moyenne (succès)  : 0.109s
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Latence moyenne (échecs)  : 0.192s
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Latence moyenne (total)   : 0.183s
+2026-07-22 17:42:20 - concurrency_test - DEBUG - 
+============================================================
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Stratégie : Optimiste  (version + UPDATE conditionnel)
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Endpoint  : /orders/optimistic
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Threads   : 20  (tous libérés simultanément)
+2026-07-22 17:42:20 - concurrency_test - DEBUG -   Article   : 3
+2026-07-22 17:42:20 - concurrency_test - DEBUG - ============================================================
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   Stocks réinitialisés ✓
+
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 0  user_id=1  HTTP 409  0.343s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ✅ thread 1  user_id=2  HTTP 201  0.06s  →  {'order_id': 702, 'total': '5.75'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 2  user_id=3  HTTP 409  0.352s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 3  user_id=1  HTTP 409  0.259s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 4  user_id=2  HTTP 409  0.271s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 5  user_id=3  HTTP 409  0.258s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 6  user_id=1  HTTP 409  0.319s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 7  user_id=2  HTTP 409  0.359s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 8  user_id=3  HTTP 409  0.409s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 9  user_id=1  HTTP 409  0.222s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 10  user_id=2  HTTP 409  0.358s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 11  user_id=3  HTTP 409  0.354s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ✅ thread 12  user_id=1  HTTP 201  0.095s  →  {'order_id': 202, 'total': '5.75'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 13  user_id=2  HTTP 409  0.238s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 14  user_id=3  HTTP 409  0.338s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 15  user_id=1  HTTP 409  0.276s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 16  user_id=2  HTTP 409  0.327s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 17  user_id=3  HTTP 409  0.291s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 18  user_id=1  HTTP 409  0.246s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   ❌ thread 19  user_id=2  HTTP 409  0.315s  →  {'error': 'Order failed (stock or constraint issue)'}
+2026-07-22 17:42:21 - concurrency_test - DEBUG - 
+  Résultat : 2 commande(s) réussie(s), 18 échouée(s) sur 20 threads
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   Latence moyenne (succès)  : 0.077s
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   Latence moyenne (échecs)  : 0.307s
+2026-07-22 17:42:21 - concurrency_test - DEBUG -   Latence moyenne (total)   : 0.285s
+2026-07-22 17:42:21 - concurrency_test - DEBUG - 
+✔ Tests terminés.
+

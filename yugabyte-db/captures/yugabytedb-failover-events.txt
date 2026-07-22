@@ -1,0 +1,7 @@
+2026-07-22T15:33:51-04:00
+yugabyte2
+2026-07-22T15:34:06-04:00
+yugabyte2
+2026-07-22T15:35:47-04:00
+CONTAINER ID   IMAGE                        COMMAND                  CREATED       STATUS          PORTS                                                                                                                        NAMES
+e1eb0ba2ae22   yugabytedb/yugabyte:latest   "/sbin/tini -- bash …"   3 hours ago   Up 11 seconds   5433/tcp, 6379/tcp, 7000/tcp, 7100/tcp, 7200/tcp, 9000/tcp, 9042/tcp, 9100/tcp, 10100/tcp, 11000/tcp, 12000/tcp, 18018/tcp   yugabyte2
